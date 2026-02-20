@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  fastapi:
+    build: ./fastapi
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"       # expose to host (optional, useful for debugging)
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  streamlit:
+    build: ./streamlit
+    container_name: streamlit_app
+    ports:
+      - "8501:8501"
+    networks:
+      - app_network
+    depends_on:
+      fastapi:
+        condition: service_healthy  # wait for FastAPI to be ready
+
+networks:
+  app_network:
+    driver: bridge
